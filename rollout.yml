@@ -1,0 +1,69 @@
+# 1. THE ROLLOUT (The Brain)
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: canary-demo
+  namespace: stateful-app-demo
+spec:
+  replicas: 4
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: canary-demo
+  template:
+    metadata:
+      labels:
+        app: canary-demo
+    spec:
+      containers:
+      - name: canary-app
+        image: ghcr.io/anastasiia-gubska/app:v1  # Your V1 Image
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        env:
+        - name: DB_URL
+          value: "postgres://postgres:postgres@postgres:5432/testdb?sslmode=disable"
+  strategy:
+    canary:
+      # These service names must match the Services defined below
+      stableService: canary-demo-stable
+      canaryService: canary-demo-canary
+      steps:
+      - setWeight: 25        # Send 25% of traffic to v2
+      - pause: {}            # Wait for manual approval (kubectl argo rollouts promote)
+      - setWeight: 50        # Send 50% of traffic to v2
+      - pause: {} 
+      - setWeight: 100
+      - pause: {}
+
+---
+# 2. STABLE SERVICE (Points to the current "Live" version)
+apiVersion: v1
+kind: Service
+metadata:
+  name: canary-demo-stable
+spec:
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  selector:
+    app: canary-demo # Argo Rollouts will manage the hash label automatically
+
+---
+# 3. CANARY SERVICE (Points to the "New" version being tested)
+apiVersion: v1
+kind: Service
+metadata:
+  name: canary-demo-canary
+spec:
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  selector:
+    app: canary-demo # Argo Rollouts will manage the hash label automatically
