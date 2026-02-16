@@ -23,7 +23,7 @@ spec:
     - port: 5432
       targetPort: 5432
 ---
-apiVersion: v1 # Added missing apiVersion
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: postgres-init
@@ -43,7 +43,7 @@ metadata:
   namespace: stateful-app-demo
 spec:
   replicas: 1
-  selector: # Added mandatory selector
+  selector: 
     matchLabels:
       app: postgres
   template:

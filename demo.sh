@@ -6,8 +6,8 @@
 # Usage: ./demo.sh clean
 
 # Configuration
-V1_URL="http://localhost:8080"
-V2_URL="http://localhost:8081"
+V1_URL="http://localhost:8888"
+V2_URL="http://localhost:9999"
 
 case "$1" in
   # Usage: ./demo.sh add_v1 "Full Name" "email"
@@ -37,6 +37,12 @@ case "$1" in
 
   clean_v2)
     curl -X POST $V2_URL/clean
+    ;;
+
+    # Usage: ./demo.sh get_user "Full Name"
+  get_user)
+    curl -s -G --data-urlencode "full_name=$2" "$V1_URL/user"
+    echo ""
     ;;
 
   *)

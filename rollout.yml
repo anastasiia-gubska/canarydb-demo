@@ -1,11 +1,10 @@
-# 1. THE ROLLOUT (The Brain)
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
   name: canary-demo
   namespace: stateful-app-demo
 spec:
-  replicas: 4
+  replicas: 1
   revisionHistoryLimit: 2
   selector:
     matchLabels:
@@ -17,7 +16,8 @@ spec:
     spec:
       containers:
       - name: canary-app
-        image: ghcr.io/anastasiia-gubska/app:v1  # Your V1 Image
+        image: ghcr.io/anastasiia-gubska/canarydemo/app:v2
+        imagePullPolicy: Always
         ports:
         - name: http
           containerPort: 8080
@@ -27,7 +27,6 @@ spec:
           value: "postgres://postgres:postgres@postgres:5432/testdb?sslmode=disable"
   strategy:
     canary:
-      # These service names must match the Services defined below
       stableService: canary-demo-stable
       canaryService: canary-demo-canary
       steps:
@@ -39,7 +38,7 @@ spec:
       - pause: {}
 
 ---
-# 2. STABLE SERVICE (Points to the current "Live" version)
+# STABLE SERVICE (Points to the current "Live" version)
 apiVersion: v1
 kind: Service
 metadata:
@@ -51,10 +50,9 @@ spec:
     protocol: TCP
     name: http
   selector:
-    app: canary-demo # Argo Rollouts will manage the hash label automatically
-
+    app: canary-demo
 ---
-# 3. CANARY SERVICE (Points to the "New" version being tested)
+# CANARY SERVICE (Points to the "New" version being tested)
 apiVersion: v1
 kind: Service
 metadata:
@@ -66,4 +64,4 @@ spec:
     protocol: TCP
     name: http
   selector:
-    app: canary-demo # Argo Rollouts will manage the hash label automatically
+    app: canary-demo

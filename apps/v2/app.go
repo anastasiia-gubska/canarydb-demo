@@ -11,7 +11,7 @@ import (
 	_ "github.com/lib/pq" // PostgreSQL driver
 )
 
-// User represents the data structure for App v1
+// User represents the data structure for App v2
 type User struct {
 	FullName  string `json:"full_name"`
 	FirstName string `json:"first_name"`
@@ -20,29 +20,27 @@ type User struct {
 }
 
 func main() {
-	// 1. Get database connection string from Environment Variables
-	// If running locally, you'll use: postgres://postgres:postgres@localhost:5433/testdb?sslmode=disable
 	dbURL := os.Getenv("DB_URL")
 	if dbURL == "" {
 		dbURL = "postgres://postgres:postgres@localhost:5432/testdb?sslmode=disable"
 	}
 
-	// 2. Open connection to the database
+	// Open connection to the database
 	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		log.Fatal("Could not connect to DB:", err)
 	}
 	defer db.Close()
 
-	// This prevents the panic. It checks if the DB is actually reachable.
+	// To prevent the panic. Check if the DB is reachable.
 	if err = db.Ping(); err != nil {
 		log.Fatal("Cannot reach database. Check if Postgres is running:", err)
 	}
 
-	// 3. Define the HTTP handler for /users
-http.HandleFunc("/user", func(w http.ResponseWriter, r *http.Request) {
+	// HTTP handler for /users
+	http.HandleFunc("/user", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
-		// GET - return full_name and email;
+		// GET - return full_name, first_name, last_name and email;
 		case http.MethodGet:
 			query := r.URL.Query()
 			fullName := query.Get("full_name")
@@ -67,6 +65,7 @@ http.HandleFunc("/user", func(w http.ResponseWriter, r *http.Request) {
         		return
     		}
 			fmt.Fprintf(w, "%s\n", email)
+
 		case http.MethodPost:
 			var u User
 			json.NewDecoder(r.Body).Decode(&u)
@@ -100,7 +99,7 @@ http.HandleFunc("/user", func(w http.ResponseWriter, r *http.Request) {
 		}
 	})
 
-	// 3. Define the HTTP handler for /clean (Reset the DB for the demo)
+	// HTTP handler for /clean (Reset the DB for the demo)
 	http.HandleFunc("/clean", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			http.Error(w, "Use POST to clean", 405)
@@ -123,6 +122,6 @@ http.HandleFunc("/user", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "Database cleaned. Back to v1 state and empty (only full_name and email_addr).")
 	})
 
-	log.Println("App v1 starting on port 8081...")
-	log.Fatal(http.ListenAndServe(":8081", nil))
+	log.Println("App v2 starting on port 8080...")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
