@@ -1,7 +1,7 @@
 # Use a build argument to switch between v1 and v2
 ARG APP_VERSION=v1
 
-FROM golang:1.21-alpine AS builder
+FROM golang:1.26-alpine AS builder
 ARG APP_VERSION
 WORKDIR /app
 

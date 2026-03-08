@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: canary-app
-        image: ghcr.io/anastasiia-gubska/canarydemo/app:v2
+        image: ghcr.io/anastasiia-gubska/canarydemo/app:v1
         imagePullPolicy: Always
         ports:
         - name: http

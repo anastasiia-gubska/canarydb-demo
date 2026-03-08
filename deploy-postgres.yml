@@ -34,7 +34,7 @@ data:
         full_name TEXT,
         email_addr TEXT
     );
-    INSERT INTO users (full_name, email_addr) VALUES ('Anastasiia Gubska', 'a.gubska@gmail.com');
+    INSERT INTO users (full_name, email_addr) VALUES ('Anastasiia Gubska', 'a.gubska@example.com');
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -57,8 +57,6 @@ spec:
         ports:
         - containerPort: 5432
         env:
-        - name: POSTGRES_USER
-          value: "postgres"
         - name: POSTGRES_PASSWORD
           value: postgres
         - name: POSTGRES_DB

@@ -13,7 +13,6 @@ import (
 
 // User represents the data structure for App v2
 type User struct {
-	FullName  string `json:"full_name"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 }
@@ -39,24 +38,20 @@ func main() {
 	// HTTP handler for /user
 	http.HandleFunc("/user", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
-		// GET - read from new columns (first_name + last_name) 
+		// GET - read from new columns (first_name and last_name) 
 		case http.MethodGet:
 			query := r.URL.Query()
-			//fullName := query.Get("full_name")
 			firstName := query.Get("first_name")
 			lastName := query.Get("last_name")
-
-			var err error
-
-			// v2: Read new columns first_name + last_name
-			if firstName != "" && lastName != "" {
-				err = db.QueryRow("SELECT first_name, last_name FROM users WHERE first_name = $1 AND last_name = $2", firstName, lastName).Scan(&firstName, &lastName)
-				// Add fallback to v1 data in case first_name and last_name are still NULL
-				// OR add UX window asking user to insert new data
-			} else {
-				http.Error(w, "Missing first_name + last_name parameters", 400)
+			
+			if firstName == "" || lastName == "" {
+				http.Error(w, "Missing first_name + last_name", 400)
 				return
 			}
+
+			var err error
+			// v3: Read new columns first_name and last_name
+			err = db.QueryRow("SELECT first_name, last_name FROM users WHERE first_name = $1 AND last_name = $2", firstName, lastName).Scan(&firstName, &lastName)
 			if err != nil {
 				http.Error(w, "User not found", 404)
 				return
@@ -64,21 +59,20 @@ func main() {
 			w.WriteHeader(200)
 			fmt.Fprintf(w, "%s %s\n", firstName, lastName)
 		
-		// POST - write to all columns (backward compatible - so v1 can read if rollback)
+		// POST - write to new columns
 		case http.MethodPost:
 			var u User
 			json.NewDecoder(r.Body).Decode(&u)
 
-			// Check: v2 need all inputs: full_name, first_name and last_name
-			if u.FullName == "" || u.FirstName == "" || u.LastName == "" {
-				http.Error(w, "full_name, first_name and last_name are required", 400)
+			// Check: v3 need both inputs first_name + last_name
+			if u.FirstName == "" || u.LastName == "" {
+				http.Error(w, "first_name and last_name are required", 400)
 				return
 			}
-
-			// v2 DUAL-WRITE: all 3 columns for backward compatibility (rollback safety)
+			// v3: Only writes to the new schema
 			_, err = db.Exec(
-				"INSERT INTO users (full_name, first_name, last_name) VALUES ($1, $2, $3)", 
-				u.FullName, u.FirstName, u.LastName)
+				"INSERT INTO users (first_name, last_name) VALUES ($1, $2)",
+				u.FirstName, u.LastName)
 
 			if err != nil {
 				log.Println("Insert Error:", err)
@@ -89,6 +83,7 @@ func main() {
 		}
 	})
 
-	log.Println("App v2 starting on port 8080...")
+
+	log.Println("App v3 starting on port 8080...")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
