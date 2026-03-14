@@ -226,7 +226,7 @@ kubectl port-forward svc/canary-demo-stable 8080:80 -n stateful-app-demo
 Remove the `full_name` column:
 
 ```bash
-kubectl exec -n stateful-app-demo deploy/postgres -it -- psql -U postgres -d testdb < db_schema/003_cleanup_schema.sql
+kubectl exec -n stateful-app-demo deploy/postgres -it -- psql -U postgres -d testdb < db_schema/003_cleanup_schema.sql#
 ```
 
 ### Verify V3 Functionality

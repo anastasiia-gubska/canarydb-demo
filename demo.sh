@@ -19,7 +19,7 @@ case "$1" in
     LAST="$5"
 
     echo "Adding to $2 ($URL)..."
-    curl -X POST -H "Content-Type: application/json" \
+    curl -s -X POST -H "Content-Type: application/json" \
     -d "{
         \"full_name\": \"$FULL\",
         \"first_name\": \"$FIRST\",
@@ -34,7 +34,7 @@ case "$1" in
     LAST="$4"
 
     echo "Adding to $2 ($URL)..."
-    curl -X POST -H "Content-Type: application/json" \
+    curl -s -X POST -H "Content-Type: application/json" \
     -d "{
         \"first_name\": \"$FIRST\",
         \"last_name\": \"$LAST\"
