@@ -1,4 +1,5 @@
 # Decoupled Canary Database Demo
+P.S. The description below is outdated, and will be updated  as soon as the author can.
 
 This demo shows a decoupled **Canary Deployment** from Database using **Argo Rollouts** for stateful applications. The core focus is on managing database schema changes (adding `first_name` and `last_name` columns) while ensuring that the legacy version (v1) and the new version (v2) can coexist without crashing.
 
